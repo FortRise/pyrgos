@@ -38,14 +38,14 @@ fn extract(path: String, out_path: String) {
                     let mut outfile = std::fs::File::create(&outpath).unwrap();
                     std::io::copy(&mut file, &mut outfile).unwrap();
                 }
-            }
 
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionExt;
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
 
-                if let Some(mode) = file.unix_mode() {
-                    std::fs::set_permissions(&outpath, std::fs::Permissions::from_mode(mode)).unwrap();
+                    if let Some(mode) = file.unix_mode() {
+                        std::fs::set_permissions(&outpath, std::fs::Permissions::from_mode(mode)).unwrap();
+                    }
                 }
             }
         }
