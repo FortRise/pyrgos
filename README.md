@@ -1,6 +1,6 @@
-# FortLauncher: TowerFall Mods Launcher
+# Pyrgos: TowerFall Mods Launcher
 
-FortLauncher is a launcher that let you patch TowerFall with mods powered by FortRise. 
+Pyrgos is a launcher that let you patch TowerFall with mods powered by FortRise. 
 
 **Features:**
 + Vanilla and Modded launching
