@@ -1,5 +1,5 @@
 [package]
-name = "pygros-gui"
+name = "pyrgos-gui"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]

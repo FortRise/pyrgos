@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "pygros-gui/src-tauri"
+    "pyrgos-gui/src-tauri"
 ]
 
 [profile.dev]
