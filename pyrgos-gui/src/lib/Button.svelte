@@ -1,10 +1,18 @@
 <script lang="ts">
+  import { downloads } from "../stores/appStore";
+
   export let onClick = () => {};
 </script>
 
+{#if $downloads == 0}
 <button class="nav-button" on:click={onClick}>
   <slot/>
 </button>
+{:else}
+<button class="nav-button" disabled>
+  <slot/>
+</button>
+{/if}
 
 <style>
 .nav-button {
@@ -19,6 +27,10 @@
   background-color: transparent;
   cursor: pointer;
   transition: 500ms;
+}
+
+.nav-button:disabled {
+  color: #6b6b6b;
 }
 
 .nav-button:hover {

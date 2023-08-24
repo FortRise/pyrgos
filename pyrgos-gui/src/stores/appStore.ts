@@ -9,3 +9,4 @@ export let tags: Writable<string[]> = writable([]);
 export let tfDirs: Writable<TFDir[]> = writable([]);
 export let availableInstaller: Writable<string[]> = writable([]);
 export let isClosed = writable(false);
+export let downloads: Writable<number> = writable(0);

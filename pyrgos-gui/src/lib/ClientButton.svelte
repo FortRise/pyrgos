@@ -6,17 +6,17 @@
   import FaFolder from 'svelte-icons/fa/FaFolder.svelte';
   import IoMdPlay from 'svelte-icons/io/IoMdPlay.svelte';
   import FaScrewdriver from 'svelte-icons/fa/FaScrewdriver.svelte';
-  import DiAptana from 'svelte-icons/di/DiAptana.svelte';
   import { tfDirs } from '../stores/appStore';
   import { invoke } from '@tauri-apps/api';
   import SubButton from './SubButton.svelte';
   import { save } from '../state/appState';
-    import { dirname } from '@tauri-apps/api/path';
-    import PlayCogs from './PlayCogs.svelte';
+  import { dirname } from '@tauri-apps/api/path';
+  import PlayCogs from './PlayCogs.svelte';
 
   export let client: TFDir;
   export let onPatchClick: (client: TFDir) => Promise<void>;
   export let onUnpatchClick: (client: TFDir) => Promise<void>;
+  export let onLaunch: (vanilla: boolean) => void;
 
   async function deleteDirectory() {
     await invoke("plugin:client|remove_tf_path", { path: client.path });
@@ -39,11 +39,13 @@
   async function playVanilla() {
     const basePath = await dirname(client.path);
     await invoke("plugin:process|execute", { path: client.path, workingDir: basePath, args: ["--vanilla"] });
+    onLaunch(true);
   }
 
   async function play() {
     const basePath = await dirname(client.path);
     await invoke("plugin:process|execute", { path: client.path, workingDir: basePath, args: [] });
+    onLaunch(!(client.tf_type == 3 || client.tf_type == 2));
   }
 
 </script>

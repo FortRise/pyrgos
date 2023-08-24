@@ -8,7 +8,7 @@
   import { fs, invoke, os } from "@tauri-apps/api";
   import { download } from 'tauri-plugin-upload-api';
   import { writable } from "svelte/store";
-  import { availableInstaller } from "../stores/appStore";
+  import { availableInstaller, downloads } from "../stores/appStore";
 
   export let name: string;
 
@@ -31,6 +31,8 @@
 
   async function downloadInstaller() {
     loading = true;
+    downloads.update(x => x += 1);
+    console.log($downloads);
     downloaderText.update(x => x = "Downloading...");
     const dirName: string = await appDataDir();
     const installerPath = await resolve(dirName, "installer", name);
@@ -62,6 +64,7 @@
       const path = await resolve(dirName, "installer", name, folderName);
       const newPath = await resolve(dirName, "installer", name, "executable");
       await fs.renameFile(path, newPath);
+      $availableInstaller.push(name);
 
       downloaderText.update(x => x = "Cleaning up...");
       await fs.removeFile(zipPath);
@@ -75,8 +78,12 @@
       downloaderText.update(x => x = "Error while downloading the installer");
       console.log(e);
     }
-
-    totalBytes = "";
+    finally 
+    {
+      downloads.update(x => x -= 1);
+      console.log($downloads);
+      totalBytes = "";
+    }
   }
 
   async function openInstallerDirectory() {

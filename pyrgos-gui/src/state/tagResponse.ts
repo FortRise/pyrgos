@@ -14,7 +14,11 @@ export type Tag = {
 }
 
 export async function fetchDownloaded() {
-  const dirs: fs.FileEntry[] = await fs.readDir("installer", { dir: BaseDirectory.App });
+  const folderExists = await fs.exists("installer", { dir: BaseDirectory.AppData });
+  if (!folderExists)
+    await fs.createDir("installer", { dir: BaseDirectory.AppData });
+
+  const dirs: fs.FileEntry[] = await fs.readDir("installer", { dir: BaseDirectory.AppData });
   dirs.forEach(async x => {
     if (x.children) {
       const installer = await resolve(x.path, "executable", "Installer.NoAnsi.exe");

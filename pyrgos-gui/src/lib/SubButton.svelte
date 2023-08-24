@@ -19,5 +19,16 @@
   cursor: pointer;
   width: 40px;
   height: 40px;
+  transition: 500ms;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.sub-button:hover {
+  color: rgb(128, 201, 206);
+}
+
+.sub-button:active {
+  color: rgb(212, 252, 255);;
 }
 </style>

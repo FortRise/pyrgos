@@ -2469,7 +2469,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pygros-gui"
+name = "pyrgos-gui"
 version = "0.0.0"
 dependencies = [
  "async-process",
