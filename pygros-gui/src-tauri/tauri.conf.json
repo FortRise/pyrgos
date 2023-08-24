@@ -1,0 +1,81 @@
+{
+  "build": {
+    "beforeDevCommand": "yarn dev",
+    "beforeBuildCommand": "yarn build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "pygros-gui",
+    "version": "0.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "dialog": {
+        "ask": true,
+        "open": true,
+        "save": true,
+        "confirm": true
+      },
+      "process": {
+        "exit": true
+      },
+      "os": {
+        "all": true
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "$EXE/installer/**/*",
+          "$APP/installer/**/*",
+          "$APP/installer/*",
+          "$APP/installer",
+          "$APP/*",
+          "$APP/**",
+          "$APP/"
+        ]
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "http": {
+        "request": true,
+        "scope": [
+          "https://api.github.com/repos/Terria-K/FortRise/git/refs/tags",
+          "https://api.gamebanana.com/Core/*",
+          "https://github.com/Terria-K/FortRise/releases/download/*"
+        ]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.tauri.dev",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "pygros-gui",
+        "width": 1024,
+        "height": 600
+      }
+    ]
+  }
+}
