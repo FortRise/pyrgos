@@ -18,7 +18,7 @@ export async function load() {
   const resolved = await resolve(path, "saves", "saveData.json");
   const exists = await fs.exists("saves", { dir: BaseDirectory.AppData });
   if (!exists)
-    await fs.createDir("saves", { dir: BaseDirectory.AppData });
+    await fs.createDir("saves", { dir: BaseDirectory.AppData, recursive: true });
   const appState: AppState = await loadClient(resolved);
   return appState;
 }

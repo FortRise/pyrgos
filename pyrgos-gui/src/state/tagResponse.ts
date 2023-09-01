@@ -16,7 +16,7 @@ export type Tag = {
 export async function fetchDownloaded() {
   const folderExists = await fs.exists("installer", { dir: BaseDirectory.AppData });
   if (!folderExists)
-    await fs.createDir("installer", { dir: BaseDirectory.AppData });
+    await fs.createDir("installer", { dir: BaseDirectory.AppData, recursive: true });
 
   const dirs: fs.FileEntry[] = await fs.readDir("installer", { dir: BaseDirectory.AppData });
   dirs.forEach(async x => {
