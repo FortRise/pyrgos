@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { path, dialog, fs, tauri, invoke } from "@tauri-apps/api";
+  import { path, dialog, fs, tauri, invoke, os } from "@tauri-apps/api";
   import { availableInstaller, route, tfDirs } from '../stores/appStore';
   import ClientButton from "./ClientButton.svelte";
   import MdInfoOutline from 'svelte-icons/md/MdInfoOutline.svelte'
@@ -80,7 +80,15 @@
   async function patching(version: string) {
     const dirName: string = await appDataDir();
     const installerFolder = await resolve(dirName, "installer", version, "executable");
-    const installerPath = await resolve(installerFolder, "Installer.NoAnsi.exe");
+    const platform = await os.platform();
+
+    let executableFormat = "exe";
+    if (platform == 'linux')
+      executableFormat = 'bin.x86_64'
+    else if (platform == 'darwin')
+      executableFormat = 'bin.osx'
+
+    const installerPath = await resolve(installerFolder, `Installer.NoAnsi.${executableFormat}`);
     const patchType = patchingType == 1 ? "--patch" : "--unpatch";
     const basePath = await path.dirname(currentClient.path);
     const unlisten = await event.listen<{message: string}>('console-stdout', (x) => {
