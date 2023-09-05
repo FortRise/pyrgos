@@ -30,13 +30,13 @@
     }
     const platform = await os.platform();
 
-    let executableFormat = "exe";
+    let executableFormat = ".exe";
     if (platform == 'linux')
-      executableFormat = 'bin.x86_64'
+      executableFormat = ''
     else if (platform == 'darwin')
-      executableFormat = 'bin.osx'
+      executableFormat = ''
 
-    const tfPath = await path.join(selected, `TowerFall.${executableFormat}`);
+    const tfPath = await path.join(selected, `TowerFall${executableFormat}`);
 
     if (await fs.exists(tfPath)) {
       const fortRisePath = await path.join(selected, "TowerFall.FortRise.mm.dll");
