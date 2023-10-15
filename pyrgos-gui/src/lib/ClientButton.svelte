@@ -76,6 +76,9 @@
     <SubButton onClick={playVanilla}>
       <IoMdPlay/>
     </SubButton>
+    <SubButton onClick={async () => await onPatchClick(client)}>
+      <FaHammer/>
+    </SubButton>
     <SubButton onClick={async () => await onUnpatchClick(client)}>
       <FaScrewdriver/>
     </SubButton>

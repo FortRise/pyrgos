@@ -6,18 +6,16 @@
   import { appDataDir, resolve} from '@tauri-apps/api/path';
   import { onMount } from "svelte";
   import { fs, invoke, os } from "@tauri-apps/api";
-  import { download } from 'tauri-plugin-upload-api';
   import { writable } from "svelte/store";
   import { availableInstaller, downloads } from "../stores/appStore";
+  import { downloadInstaller as downloadInstallerAPI, load } from "../api/client";
 
   export let name: string;
 
   let found = false;
   let loading = false;
 
-  const bytes = writable(0);
   const downloaderText = writable("");
-  let totalBytes: string = "";
 
   onMount(async () => {
     const dirName: string = await appDataDir();
@@ -31,59 +29,11 @@
 
   async function downloadInstaller() {
     loading = true;
-    downloads.update(x => x += 1);
-    console.log($downloads);
-    downloaderText.update(x => x = "Downloading...");
-    const dirName: string = await appDataDir();
-    const installerPath = await resolve(dirName, "installer", name);
-    const zipPath = await resolve(dirName, "installer", name + '.zip');
-
-    const platform = await os.platform()
-    let postFix = 'NoANSI'
-    if (platform == 'linux' || platform == 'darwin')
-      postFix = "OSXLinux"
-
-    const folderName = `FortRise.Installer.v${name}-${postFix}`;
-    const zipName = `${folderName}.zip`;
-    const url = `https://github.com/Terria-K/FortRise/releases/download/${name}/${zipName}`;
-
-    try 
-    {
-      await download(url, zipPath, (x, total) => {
-        const value = (x / 1024) / 1024;
-        if (totalBytes != total.toFixed(2)) 
-        {
-          totalBytes = (total / 1024/ 1024).toFixed(2);
-        }
-        bytes.update(x => x += value);
-        downloaderText.update(x => x = $bytes.toFixed(2) + "/" + totalBytes + "MB");
-      });
-
-      downloaderText.update(x => x = "Extracting...");
-      await invoke('plugin:fix_fs|extract', { path: zipPath, outPath: installerPath });
-      const path = await resolve(dirName, "installer", name, folderName);
-      const newPath = await resolve(dirName, "installer", name, "executable");
-      await fs.renameFile(path, newPath);
-      $availableInstaller.push(name);
-
-      downloaderText.update(x => x = "Cleaning up...");
-      await fs.removeFile(zipPath);
-      loading = false;
-      found = true;
-    }
-    catch (e)
-    {
-      if (fs.exists(zipPath))
-        await fs.removeFile(zipPath);
-      downloaderText.update(x => x = "Error while downloading the installer");
-      console.log(e);
-    }
-    finally 
-    {
-      downloads.update(x => x -= 1);
-      console.log($downloads);
-      totalBytes = "";
-    }
+    await downloadInstallerAPI(name, (text, bytes) => {
+      $downloaderText = text;
+    });
+    loading = false;
+    found = true;
   }
 
   async function openInstallerDirectory() {

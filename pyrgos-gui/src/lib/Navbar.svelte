@@ -22,10 +22,11 @@
       <FaCogs/>
     </Button>
 
-    <div class="nav-exit">
-      <Button onClick={async () => await exit(0)}><IoMdExit/></Button>
-    </div>
+
   </li>
+  <div class="nav-exit">
+    <Button onClick={async () => await exit(0)}><IoMdExit/></Button>
+  </div>
 </div>
 
 <style>
@@ -48,6 +49,7 @@
 }
 
 .nav-exit {
-  padding-top: 300px;
+  position: absolute;
+  bottom: 10px;
 }
 </style>

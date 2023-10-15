@@ -1,23 +1,26 @@
 <script lang="ts">
   import { path, dialog, fs, tauri, invoke, os } from "@tauri-apps/api";
-  import { availableInstaller, route, tfDirs } from '../stores/appStore';
+  import { availableInstaller, dialogOpen, fadeOpen, route, tfDirs } from '../stores/appStore';
   import ClientButton from "./ClientButton.svelte";
-  import MdInfoOutline from 'svelte-icons/md/MdInfoOutline.svelte'
   import { save } from "../state/appState";
   import { event } from "@tauri-apps/api"
   import { INSTALLER } from "../state/route";
   import { appDataDir, resolve } from "@tauri-apps/api/path";
-  import { changeState, update as updateClient } from "../api/client";
+  import { changeState, downloadInstaller, fetchLastVersion as fetchLatestVersion, showDialog, update as updateClient } from "../api/client";
   import { writable } from "svelte/store";
   import type { Writable } from "svelte/store";
+  import InstancePopup from "./InstancePopup.svelte";
 
   let patchingType = 0;
   let currentClient: TFDir = null;
   let onPatchingState = 0;
-  let commandLineTexts: Writable<string[]> = writable([]);
+  let commandLineTexts: Writable<string> = writable("");
   let consoleWindow: Element;
   let launching = false;
   let launchingText = "TowerFall is launching...";
+
+  let downloadingInstaller = false;
+  let downloadingText = "";
 
   async function openDirectory() {
     const selected: string | string[] | null = await dialog.open({
@@ -72,6 +75,24 @@
       {
         console.log(fall);
       }
+
+      showDialog("Do you want to download the latest installer and patch or update this directory?", true, async () => {
+        currentClient = dir;
+        $dialogOpen.dialogOpen = false;
+        $fadeOpen = false;
+        downloadingInstaller = true;
+        downloadingText = "Fetching Versions...";
+        const tag =  await fetchLatestVersion();
+        const version = tag.ref.replace("refs/tags/", "");
+
+        await downloadInstaller(version, (text, bytes) => {
+          downloadingText = text;
+        });
+        downloadingInstaller = false;
+        onPatchingState = 1;
+
+        await patching(version, "--patch");
+      });
     }
   }
 
@@ -85,7 +106,7 @@
     currentClient = client;
   }
 
-  async function patching(version: string) {
+  async function patching(version: string, patchType: string) {
     const dirName: string = await appDataDir();
     const installerFolder = await resolve(dirName, "installer", version, "executable");
     const platform = await os.platform();
@@ -97,15 +118,14 @@
       executableFormat = 'bin.osx'
 
     const installerPath = await resolve(installerFolder, `Installer.NoAnsi.${executableFormat}`);
-    const patchType = patchingType == 1 ? "--patch" : "--unpatch";
     const basePath = await path.dirname(currentClient.path);
     const unlisten = await event.listen<{message: string}>('console-stdout', (x) => {
-      $commandLineTexts.push(x.payload.message + "\n");
+      $commandLineTexts += x.payload.message + "\n";
       commandLineTexts.update(x => x = $commandLineTexts);
-      consoleWindow.lastElementChild.scrollIntoView();
+      consoleWindow.scrollTop = consoleWindow.scrollHeight;
     });
     onPatchingState = 1;
-    const code: number = await invoke("execute_interactive", { 
+    const errorCode: number = await invoke("execute_interactive", { 
       path: installerPath,
       args: [patchType, basePath],
       workingDir: installerFolder
@@ -115,7 +135,7 @@
 
     onPatchingState = 2;
     
-    if (code == 1) {
+    if (errorCode == 1) {
       return;
     }
 
@@ -134,7 +154,7 @@
     save();
   }
   function onPatchExit() {
-    $commandLineTexts = [];
+    $commandLineTexts = "";
     onPatchingState = 0;
     patchingType = 0;
   }
@@ -150,9 +170,16 @@
     }, 7000)
   }
 </script>
+{#if downloadingInstaller}
+<div class="fade-modal">
+  <div class="downloader">
+    <p>{downloadingText}</p>
+  </div>
+</div>
+{/if}
 
 {#if patchingType != 0}
-<div class="patch-fade-modal">
+<div class="fade-modal">
   <div class="patch-modal">
     {#if patchingType == 2}
     <p class="patch-title-text">SELECT UNINSTALLERS</p>
@@ -161,7 +188,7 @@
     {/if}
     <div class="patch-inside">
       {#each $availableInstaller as installer}
-      <button class="installer-panels" on:click={() => patching(installer)}>
+      <button class="installer-panels" on:click={() => patching(installer, patchingType == 1 ? "--patch" : "--unpatch")}>
         <p>{installer}</p>
       </button>
       {/each}
@@ -182,13 +209,11 @@
 {/if}
 
 {#if onPatchingState >= 1}
-<div class="patch-fade-modal">
+<div class="fade-modal">
   <div class="patch-modal big">
     <p class="patch-title-text">Console Output</p>
     <div class="patch-inside console" bind:this={consoleWindow}>
-      {#each $commandLineTexts as text}
-        <p>{text}</p>
-      {/each}
+      <p style="white-space: pre-line">{$commandLineTexts}</p>
     </div>
     {#if onPatchingState == 2}
     <button class="patch-button" on:click={onPatchExit}>Close</button>
@@ -212,66 +237,20 @@
   </div>
 </div>
 
-<div class={`instance-popup ${launching ? 'show' : ''}`}>
-  <p>{launchingText}</p>
-  <div class="instance-icon">
-    <MdInfoOutline/>
-  </div>
-</div>
+<InstancePopup launching={launching} launchingText={launchingText}/>
 
 <style>
-.instance-popup {
-  visibility: hidden;
-  transform: scale(0, 0);
-  position: absolute;
+.downloader {
+  text-align: center;
   background-color: rgb(27, 27, 27);
   border-radius: 8px 8px 8px 8px;
   border-left: 4px solid rgb(101, 255, 242);
-  right: 20px;
-  bottom: 20px;
-  width: 400px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.instance-popup.show {
-  animation-name: show;
-  animation-duration: 6s;
-}
-
-@keyframes show {
-  0% {
-    visibility: hidden;
-    transform: scale(0, 0);
-  }
-  5% {
-    visibility: visible;
-    transform: scale(1, 1);
-  }
-  95% {
-    visibility: visible;
-    transform: scale(1, 1);
-  }
-  100% {
-    visibility: hidden;
-    transform: scale(0, 0);
-  }
-}
-
-.instance-icon {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  color: rgb(101, 255, 242);
-}
-
-.instance-popup p {
-  font-size: 20px;
-  font-weight: bolder;
-  margin-left: 8px;
-  margin-top: 16px;
+  width: 50%;
+  height: auto;
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .installer-panels {
@@ -310,7 +289,7 @@
   background-color: rgb(127, 216, 197);
 }
 
-.patch-fade-modal {
+.fade-modal {
   position: absolute;
   width: 100%;
   height: 100%;
