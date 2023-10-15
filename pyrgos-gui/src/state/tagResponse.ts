@@ -28,13 +28,20 @@ export async function fetchDownloaded() {
           x.push(verName);
           availableInstaller.update(y => { 
               y.push(verName);
-              y.reverse();
               return y;
           });
-          x.reverse();
           return x;
         });
       }
     }
+    tags.update(x => {
+      x.reverse();
+      return x;
+    });
+
+    availableInstaller.update(y => {
+      y.reverse();
+      return y;
+    })
   })
 }
