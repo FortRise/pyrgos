@@ -1,10 +1,10 @@
 [package]
 name = "pyrgos-gui"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+version = "0.2.1"
+description = "A dedicated launcher for TowerFall and FortRise"
+authors = ["terria"]
+license = "MIT"
+repository = "https://github.com/FortRise/pyrgos"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
