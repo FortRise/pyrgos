@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Pyrgos",
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "tauri": {
     "allowlist": {
@@ -74,7 +74,8 @@
         "resizable": true,
         "title": "Pyrgos",
         "width": 1024,
-        "height": 600
+        "height": 600,
+        "theme": "Dark"
       }
     ]
   }
